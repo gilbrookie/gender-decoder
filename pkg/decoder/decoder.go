@@ -66,7 +66,7 @@ func NewDecoder(cfg *Config) (*DecodeWrapper, error) {
 				log.Fatalf(err.Error())
 			}
 			if !info.IsDir() {
-				fmt.Printf("Found: file name: %s\n", info.Name())
+				log.Printf("Found: file name: %s\n", info.Name())
 				decodeWrapper.addFileToAssessment(path)
 			}
 			return nil

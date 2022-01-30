@@ -9,6 +9,7 @@ import (
 func main() {
 	var input = flag.String("i", "", "Input file/folder location")
 	flag.Parse()
+
 	log.Println("Got Input", *input)
 
 	cfg := decoder2.NewDecoderConfig(input)
