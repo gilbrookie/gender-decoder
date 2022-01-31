@@ -55,7 +55,7 @@ func normalizeAll(text string) string {
 
 func getKeys(m map[string]bool) []string {
 	var keys []string
-	for k, _ := range m {
+	for k := range m {
 		keys = append(keys, k)
 	}
 	return keys

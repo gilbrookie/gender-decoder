@@ -1,13 +1,13 @@
 package decoder
 
 import (
-	"log"
+	"fmt"
 )
 
 var feminineLeaning = `
 	This job description uses more words that are stereotypically feminine
-	than words that are stereotypically masculine. Research	suggests 
-    this will have only a slight effect on how appealing the job is
+	than words that are stereotypically masculine. Research	suggests
+	this will have only a slight effect on how appealing the job is
 	to men, and will encourage women applicants. `
 
 var masculineLeaning = `
@@ -59,26 +59,27 @@ func (r *Results) Explain() {
 		// mostly masculine
 		result = "masculine"
 		explanation = masculineLeaning
-	} else if len(r.feminineCodedWords) > len(masculineCodedWords) {
+	} else if len(r.masculineCodedWords) < len(r.feminineCodedWords) {
 		// mostly feminine
 		result = "feminine"
 		explanation = feminineLeaning
-	} else if len(r.masculineCodedWords) == 0 && len(r.feminineCodedWords) == 0 {
-		// clean !!!
-		result = "clean"
-		explanation = cleanMessage
 	} else {
 		// neutral
 		result = "neutral"
 		explanation = neutralMessage
 	}
 
-	log.Println("------------------------------------")
-	log.Println("--> File:", r.filepath)
-	log.Println("--> Result:", result)
-	log.Println("--> Explanation:", explanation)
-	log.Println("--> masculine words: ", getKeys(r.masculineCodedWords))
-	log.Println("--> feminine words", getKeys(r.feminineCodedWords))
-	log.Println("--> hyphenated words", getKeys(r.hyphenatedCodedWords))
+	if len(r.masculineCodedWords) == 0 && len(r.feminineCodedWords) == 0 {
+		// clean !!!
+		result = "clean"
+		explanation = cleanMessage
+	}
+
+	fmt.Println("")
+	fmt.Println("File:", r.filepath)
+	fmt.Println("Result:", result)
+	fmt.Println("Explanation:", explanation)
+	fmt.Println("masculine words: ", getKeys(r.masculineCodedWords))
+	fmt.Println("feminine words", getKeys(r.feminineCodedWords))
 
 }
