@@ -2,12 +2,13 @@ package decoder
 
 import (
 	"fmt"
-	"github.com/nguyenthenguyen/docx"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/nguyenthenguyen/docx"
 )
 
 type Decoder interface {
@@ -24,7 +25,6 @@ func NewDecoderConfig(input *string) *Config {
 }
 
 type DecodeWrapper struct {
-	cfg           *Config
 	filesToAssess map[string]Decoder
 	results       []*Results
 }
@@ -139,17 +139,17 @@ func compareToWordList(file string, content []string, wordlist *Wordlist) *Resul
 	for _, word := range content {
 		for _, listedWord := range wordlist.masculineCoded {
 			if strings.HasPrefix(word, listedWord) {
-				res.foundMasculineWord(word)
+				res.foundMasculineWord(word, listedWord)
 			}
 		}
 		for _, listedWord := range wordlist.feminineCoded {
 			if strings.HasPrefix(word, listedWord) {
-				res.foundFeminineWord(word)
+				res.foundFeminineWord(word, listedWord)
 			}
 		}
 		for _, listedWord := range wordlist.hyphenatedCoded {
 			if strings.HasPrefix(word, listedWord) {
-				res.foundHyphenatedWord(word)
+				res.foundHyphenatedWord(word, listedWord)
 			}
 		}
 	}

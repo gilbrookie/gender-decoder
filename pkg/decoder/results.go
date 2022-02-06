@@ -16,7 +16,7 @@ var masculineLeaning = `
 	applying, but will probably encourage men to apply. `
 
 var neutralMessage = `
-	This job description uses an equal number of words that are 
+	This job description uses an equal number of words that are
 	stereotypically masculine and stereotypically feminine. It probably won't
 	be off-putting to men or women applicants. `
 
@@ -27,9 +27,17 @@ var cleanMessage = `
 
 type Results struct {
 	filepath             string
-	masculineCodedWords  map[string]bool
-	feminineCodedWords   map[string]bool
-	hyphenatedCodedWords map[string]bool
+	masculineCodedWords  map[string][]string
+	feminineCodedWords   map[string][]string
+	hyphenatedCodedWords map[string][]string
+}
+
+type ResultResponse struct {
+	File           string              `json:"file"`
+	Result         string              `json:"result"`
+	Description    string              `json:"description"`
+	MasculineWords map[string][]string `json:"masculine_words"`
+	FeminineWords  map[string][]string `json:"feminine_words"`
 }
 
 func NewResults(filepath string) *Results {
@@ -37,29 +45,47 @@ func NewResults(filepath string) *Results {
 		filepath: filepath,
 		// initialize the maps
 		// The intent is to use the map keys like a Set to avoid duplicate entries
-		masculineCodedWords:  make(map[string]bool),
-		feminineCodedWords:   make(map[string]bool),
-		hyphenatedCodedWords: make(map[string]bool),
+		masculineCodedWords:  make(map[string][]string),
+		feminineCodedWords:   make(map[string][]string),
+		hyphenatedCodedWords: make(map[string][]string),
 	}
 }
-func (r *Results) foundMasculineWord(w string) {
-	r.masculineCodedWords[w] = true
+
+func (r *Results) foundMasculineWord(w, listedWord string) {
+	r.masculineCodedWords[listedWord] = append(r.masculineCodedWords[listedWord], w)
 }
-func (r *Results) foundFeminineWord(w string) {
-	r.feminineCodedWords[w] = true
+func (r *Results) foundFeminineWord(w, listedWord string) {
+	r.feminineCodedWords[listedWord] = append(r.feminineCodedWords[listedWord], w)
 }
-func (r *Results) foundHyphenatedWord(w string) {
-	r.hyphenatedCodedWords[w] = true
+func (r *Results) foundHyphenatedWord(w, listedWord string) {
+	r.hyphenatedCodedWords[listedWord] = append(r.hyphenatedCodedWords[listedWord], w)
 }
 
-func (r *Results) Explain() {
+func (r *Results) getCount(m map[string][]string) int {
+	var sum int
+	for _, words := range m {
+		sum = sum + len(words)
+	}
+	return sum
+}
+
+func PrintMap(m map[string][]string) {
+	for k, words := range m {
+		fmt.Printf("%s => %s\n", k, words)
+	}
+}
+
+func (r *Results) Explain() *ResultResponse {
 	var result, explanation string
 
-	if len(r.masculineCodedWords) > len(r.feminineCodedWords) {
+	masculineWords := r.getCount(r.masculineCodedWords)
+	feminineWords := r.getCount(r.feminineCodedWords)
+
+	if masculineWords > feminineWords {
 		// mostly masculine
 		result = "masculine"
 		explanation = masculineLeaning
-	} else if len(r.masculineCodedWords) < len(r.feminineCodedWords) {
+	} else if masculineWords < feminineWords {
 		// mostly feminine
 		result = "feminine"
 		explanation = feminineLeaning
@@ -69,7 +95,7 @@ func (r *Results) Explain() {
 		explanation = neutralMessage
 	}
 
-	if len(r.masculineCodedWords) == 0 && len(r.feminineCodedWords) == 0 {
+	if masculineWords == 0 && feminineWords == 0 {
 		// clean !!!
 		result = "clean"
 		explanation = cleanMessage
@@ -79,7 +105,19 @@ func (r *Results) Explain() {
 	fmt.Println("File:", r.filepath)
 	fmt.Println("Result:", result)
 	fmt.Println("Explanation:", explanation)
-	fmt.Println("masculine words: ", getKeys(r.masculineCodedWords))
-	fmt.Println("feminine words", getKeys(r.feminineCodedWords))
+	fmt.Println("Masculine words:")
+	PrintMap(r.masculineCodedWords)
+	fmt.Println("Feminine words:")
+	PrintMap(r.feminineCodedWords)
+	// fmt.Println("masculine words: ", getKeys(r.masculineCodedWords))
+	// fmt.Println("feminine words", getKeys(r.feminineCodedWords))
 
+	res := ResultResponse{
+		File:           r.filepath,
+		Result:         result,
+		Description:    explanation,
+		MasculineWords: r.masculineCodedWords,
+		FeminineWords:  r.feminineCodedWords,
+	}
+	return &res
 }
