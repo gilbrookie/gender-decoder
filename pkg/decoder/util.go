@@ -53,7 +53,7 @@ func normalizeAll(text string) string {
 	return strings.Map(normalizeQuotes, text)
 }
 
-func getKeys(m map[string]bool) []string {
+func getKeys(m map[string][]string) []string {
 	var keys []string
 	for k := range m {
 		keys = append(keys, k)
